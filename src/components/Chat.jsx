@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import translate from 'google-translate-api';
 import { Box, Button, Input, VStack, Text } from "@chakra-ui/react";
 
 const Chat = () => {
@@ -18,11 +19,18 @@ const Chat = () => {
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (input.trim() === "") return;
 
     const userMessage = { sender: "user", text: input };
-    const botMessage = { sender: "bot", text: getBotResponse(input) };
+    // Detect language and translate to English
+    const translatedInput = await translate(input, { to: 'en' });
+    const botResponseInEnglish = getBotResponse(translatedInput.text);
+
+    // Translate bot response back to user's language
+    const translatedBotResponse = await translate(botResponseInEnglish, { to: translatedInput.from.language.iso });
+
+    const botMessage = { sender: "bot", text: translatedBotResponse.text };
 
     setMessages([...messages, userMessage, botMessage]);
     setInput("");
